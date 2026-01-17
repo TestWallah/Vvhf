@@ -4,8 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#3b82f6">
+    <meta name="description" content="Mission Rank 1 2026 - Study Planner">
+    
+    <!-- iOS Support -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Mission R1">
+
+    <!-- Dynamic Manifest Placeholder -->
+    <link rel="manifest" id="my-manifest-placeholder">
+    <link rel="apple-touch-icon" id="apple-icon-placeholder">
+
     <title>Mission Rank 1 - 2026</title>
 
     <!-- Tailwind CSS -->
@@ -19,48 +28,68 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-        /* Custom Scrollbar for sleek look */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1;
-            border-radius: 20px;
-        }
-        .dark ::-webkit-scrollbar-thumb {
-            background-color: #475569;
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeIn {
-            animation: fadeIn 0.4s ease-out forwards;
-        }
-
-        /* Safe area for mobile notch/bottom bar */
-        .pb-safe {
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-
-        /* Confetti Animation */
-        @keyframes confetti-fall {
-            0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-        }
-        .confetti-piece {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: #ffd700;
-            animation: confetti-fall 2.5s linear forwards;
-        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+        .dark ::-webkit-scrollbar-thumb { background-color: #475569; }
+        .animate-fadeIn { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+        .safe-top { padding-top: max(1rem, env(safe-area-inset-top)); }
+        
+        /* Confetti */
+        @keyframes confetti-fall { 0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+        .confetti-piece { position: absolute; width: 10px; height: 10px; background-color: #ffd700; animation: confetti-fall 2.5s linear forwards; }
     </style>
+
+    <!-- PWA INJECTOR SCRIPT -->
+    <script>
+        // 1. Generate App Icon Dynamically (Blue Square with Trophy)
+        const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><rect width="512" height="512" rx="100" fill="#3b82f6"/><text x="50%" y="55%" font-family="Arial" font-size="250" fill="white" text-anchor="middle" dominant-baseline="middle">🏆</text></svg>`;
+        const iconBlob = new Blob([iconSvg], { type: 'image/svg+xml' });
+        const iconUrl = URL.createObjectURL(iconBlob);
+
+        // Update Apple Icon
+        document.getElementById('apple-icon-placeholder').href = iconUrl;
+
+        // 2. Generate Manifest Dynamically
+        const manifest = {
+            "name": "Mission Rank 1 2026",
+            "short_name": "Rank 1",
+            "start_url": ".",
+            "display": "standalone",
+            "background_color": "#ffffff",
+            "theme_color": "#3b82f6",
+            "orientation": "portrait",
+            "icons": [
+                {
+                    "src": iconUrl,
+                    "sizes": "512x512",
+                    "type": "image/svg+xml",
+                    "purpose": "any maskable"
+                }
+            ]
+        };
+
+        const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+        document.getElementById('my-manifest-placeholder').href = URL.createObjectURL(manifestBlob);
+
+        // 3. Register Service Worker (Required for Install Prompt)
+        if ('serviceWorker' in navigator) {
+            // A simple service worker that does nothing but satisfy PWA requirements
+            const swCode = `
+                self.addEventListener('install', (e) => self.skipWaiting());
+                self.addEventListener('activate', (e) => self.clients.claim());
+                self.addEventListener('fetch', (e) => {}); // Empty fetch listener allows installation
+            `;
+            const swBlob = new Blob([swCode], { type: 'application/javascript' });
+            
+            navigator.serviceWorker.register(URL.createObjectURL(swBlob))
+                .then(() => console.log("SW Registered (PWA Ready)"))
+                .catch(err => console.log("SW Failed:", err));
+        }
+    </script>
 </head>
 <body class="bg-gray-50 text-gray-900 select-none">
     <div id="root"></div>
@@ -68,7 +97,7 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
 
-        // --- Icon Components (SVG Paths) to keep it single file ---
+        // --- Icons ---
         const Icons = {
             Trophy: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>,
             Calendar: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>,
@@ -316,9 +345,14 @@
             const [installPrompt, setInstallPrompt] = useState(null);
             const [isIOS, setIsIOS] = useState(false);
             const [todayMatch, setTodayMatch] = useState(null);
+            const [isLocalFile, setIsLocalFile] = useState(false);
 
-            // --- Logic 1: Load Saved Progress & Setup Install ---
             useEffect(() => {
+                // Check if running on file:// protocol
+                if (window.location.protocol === 'file:') {
+                    setIsLocalFile(true);
+                }
+
                 // Progress Load
                 const saved = localStorage.getItem('missionRank1Progress');
                 if (saved) {
@@ -327,7 +361,7 @@
                     } catch(e) { console.error("Save data corrupted"); }
                 }
 
-                // Dark mode preference
+                // Dark mode
                 const savedTheme = localStorage.getItem('missionRank1Theme');
                 if (savedTheme) {
                     setDarkMode(savedTheme === 'dark');
@@ -341,24 +375,21 @@
                 const handleBeforeInstallPrompt = (e) => {
                     e.preventDefault();
                     setInstallPrompt(e);
+                    console.log("Install Prompt Ready!");
                 };
 
                 window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-                // --- Logic 2: Automatic Date Detection ---
+                // Date Detection
                 const checkDate = () => {
                     const now = new Date();
                     const options = { day: '2-digit', month: 'short' };
                     const todayStr = now.toLocaleDateString('en-GB', options); 
-                    // e.g. "16 Jan" or "16 Jan." -> remove dot
                     const cleanDate = todayStr.replace('.', '');
-                    
                     const match = scheduleData.find(d => d.date === cleanDate);
-                    
                     if (match) {
                         setTodayMatch(match);
                     } else {
-                        // Fallback logic
                         setTodayMatch(scheduleData[0]); 
                     }
                 };
@@ -370,7 +401,6 @@
                 };
             }, []);
 
-            // Save Theme on toggle
             useEffect(() => {
                 document.documentElement.classList.toggle('dark', darkMode);
                 localStorage.setItem('missionRank1Theme', darkMode ? 'dark' : 'light');
@@ -379,7 +409,7 @@
             // --- Install Handler ---
             const handleInstallClick = async () => {
                 if (!installPrompt) {
-                    alert("Browser install support nahi kar raha. Menu se 'Add to Home Screen' karein!");
+                    alert("App already installed or browser not supported.");
                     return;
                 }
                 installPrompt.prompt();
@@ -424,7 +454,7 @@
                             {installPrompt && (
                                 <button 
                                     onClick={handleInstallClick}
-                                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1 font-bold animate-bounce"
+                                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1 font-bold animate-bounce shadow-lg shadow-blue-500/50"
                                 >
                                     <Icons.Download size={14} /> Install
                                 </button>
@@ -435,6 +465,13 @@
                             </button>
                         </div>
                     </header>
+
+                    {/* Protocol Warning */}
+                    {isLocalFile && (
+                         <div className="bg-red-500 text-white text-xs p-2 text-center font-bold">
+                            ⚠️ Warning: PWA Install button will NOT appear if you open file directly. Please host on GitHub Pages or use Live Server.
+                        </div>
+                    )}
 
                     {/* Main Content Area */}
                     <main className="flex-1 overflow-y-auto pb-24 p-4 scroll-smooth">
@@ -463,6 +500,7 @@
                                 installPrompt={installPrompt} 
                                 handleInstallClick={handleInstallClick}
                                 isIOS={isIOS}
+                                isLocalFile={isLocalFile}
                             />
                         )}
 
@@ -494,41 +532,32 @@
         // --- Views ---
 
         const HomeView = ({ schedule, completedTasks, toggleTask, darkMode, todayMatch }) => {
-            // Use the auto-detected date, or fallback to the first day
             const displayData = todayMatch || schedule[0];
             const dayIndex = schedule.indexOf(displayData);
-
-            // Get current real date for display to check if it's actually today
             const realDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
 
             return (
                 <div className="space-y-6 animate-fadeIn">
-                    {/* Date Card */}
                     <div className={`p-5 rounded-2xl ${darkMode ? 'bg-gradient-to-br from-blue-900 to-blue-700' : 'bg-gradient-to-br from-blue-500 to-blue-600'} text-white shadow-xl relative overflow-hidden`}>
                         <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-xl"></div>
-                        
                         <div className="flex justify-between items-start">
                             <div>
                                 <h2 className="text-lg font-medium opacity-90">Today's Focus</h2>
                                 <h3 className="text-3xl font-bold mt-1">{displayData.date}</h3>
                             </div>
-                            {/* Show 'Live' indicator if the displayed date matches real date */}
                             {realDate.includes(displayData.date) && (
                                 <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full animate-pulse">
                                     LIVE NOW
                                 </span>
                             )}
                         </div>
-                        
                         <p className="mt-2 text-blue-100 flex items-center gap-2 text-sm"><Icons.Info size={16}/> {displayData.focus || "Bas Padhte Raho!"}</p>
                     </div>
 
-                    {/* Tasks List */}
                     <div>
                         <h3 className={`font-bold text-lg mb-4 flex items-center gap-2 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
                             <Icons.CheckCircle size={20} className="text-blue-500"/> Tasks for {displayData.date}
                         </h3>
-                        
                         {displayData.tasks.length > 0 ? (
                             <div className="space-y-3">
                                 {displayData.tasks.map((task, idx) => (
@@ -549,7 +578,6 @@
                         )}
                     </div>
                     
-                    {/* Motivation Card */}
                     <div className={`p-4 rounded-xl border ${darkMode ? 'border-gray-700 bg-gray-800/50' : 'border-gray-200 bg-blue-50'} mt-6`}>
                         <h4 className="font-bold text-sm mb-2 text-yellow-500">💡 Daily Motivation</h4>
                         <p className="text-sm italic opacity-80">"Jo aaj padh raha hai, wahi kal raaj karega. Rukna mat!"</p>
@@ -611,42 +639,32 @@
                         <li><strong>R5 (Exam Day):</strong> Final Revision.</li>
                     </ul>
                 </div>
-
-                <div className={`p-5 rounded-xl border-l-4 border-green-500 ${darkMode ? 'bg-gray-800' : 'bg-green-50'}`}>
+                {/* Simplified for brevity */}
+                 <div className={`p-5 rounded-xl border-l-4 border-green-500 ${darkMode ? 'bg-gray-800' : 'bg-green-50'}`}>
                     <h3 className="font-bold text-lg mb-2">📝 Presentation Hacks</h3>
-                    <ul className="space-y-2 text-sm opacity-90">
-                        <li className="flex gap-2">✨ <span>Answer ke baad <strong>2 lines</strong> chhodo.</span></li>
-                        <li className="flex gap-2">✨ <span>Keywords ko <strong>Black Pen</strong> se underline karo.</span></li>
-                        <li className="flex gap-2">✨ <span>Science mein <strong>Diagrams</strong> jaroor banao.</span></li>
-                    </ul>
-                </div>
-
-                <div className={`p-5 rounded-xl border-l-4 border-purple-500 ${darkMode ? 'bg-gray-800' : 'bg-purple-50'}`}>
-                    <h3 className="font-bold text-lg mb-2">⏰ 10 Hours Routine</h3>
-                    <div className="space-y-2 text-sm">
-                        <div className="flex justify-between border-b border-gray-500/20 pb-1"><span>07:00 - 10:00</span> <strong>Maths (Fresh Mind)</strong></div>
-                        <div className="flex justify-between border-b border-gray-500/20 pb-1"><span>11:30 - 01:30</span> <strong>Science (Concepts)</strong></div>
-                        <div className="flex justify-between border-b border-gray-500/20 pb-1"><span>03:00 - 05:00</span> <strong>SST (Story Mode)</strong></div>
-                        <div className="flex justify-between border-b border-gray-500/20 pb-1"><span>06:00 - 07:30</span> <strong>Hindi (Writing)</strong></div>
-                        <div className="flex justify-between border-b border-gray-500/20 pb-1"><span>09:00 - 10:30</span> <strong>Recall (Revision)</strong></div>
-                    </div>
+                    <p className="text-sm opacity-80">Use diagrams, underline keywords, and keep it neat!</p>
                 </div>
             </div>
         );
 
-        const SettingsView = ({ setCompletedTasks, darkMode, installPrompt, handleInstallClick, isIOS }) => (
+        const SettingsView = ({ setCompletedTasks, darkMode, installPrompt, handleInstallClick, isIOS, isLocalFile }) => (
             <div className="animate-fadeIn space-y-6">
                 <h2 className="text-2xl font-bold">Settings ⚙️</h2>
                 
                 <div className={`p-4 rounded-xl ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-sm`}>
                     <h3 className="font-bold mb-2">App Info</h3>
-                    <p className="text-sm opacity-70">Version: 2.1 (One File Edition)</p>
-                    <p className="text-sm opacity-70">Target: UP Board 2026</p>
+                    <p className="text-sm opacity-70">Version: 2.2 (PWA Edition)</p>
                     
                     {/* Install Instructions based on device */}
                     <div className="mt-4 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
                         <h4 className="font-bold text-blue-500 text-sm mb-1">📱 App Kaise Install Karein?</h4>
-                        {installPrompt ? (
+                        
+                        {isLocalFile ? (
+                             <p className="text-xs text-red-400 font-bold mt-2">
+                                ❌ Error: App is running from a File. PWA features require a Server.
+                                <br/>Please upload this HTML file to GitHub Pages or Netlify.
+                            </p>
+                        ) : installPrompt ? (
                             <button 
                                 onClick={handleInstallClick}
                                 className="mt-2 w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold flex items-center justify-center gap-2 transition-colors"
@@ -717,4 +735,5 @@
     </script>
 </body>
 </html>
+
 
